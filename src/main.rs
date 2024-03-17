@@ -5,13 +5,13 @@ use anyhow::{anyhow, Result};
 use arguments::Arguments;
 use clap::Parser;
 use git::git_init;
-use minijinja::{context, Environment};
 use std::{
     fs::{create_dir, File},
     io::Write,
     path::Path,
     process::exit,
 };
+use tera::Tera;
 
 fn main() {
     let args = Arguments::parse();
@@ -35,16 +35,16 @@ fn create(args: &Arguments) -> Result<()> {
     }
 
     // template
-    let mut env = Environment::new();
-    env.add_template(
-        "templates/CMakeLists.txt",
-        include_str!("templates/CMakeLists.txt"),
-    )?;
-    let tmpl = env.get_template("templates/CMakeLists.txt")?;
+    // let tera = Tera::new("templates/**/*")?;
+    let mut tera = Tera::default();
+    tera.add_template_file("templates/CMakeLists.txt", Some("CMakeLists.txt"))?;
+
+    let mut context = tera::Context::new();
+    context.insert("name", "example-project");
 
     // cmakelists
     let mut cmakelists = File::create(path.join("CMakeLists.txt"))?;
-    cmakelists.write_all(tmpl.render(context!(name=> "exmaple-project"))?.as_bytes())?;
+    cmakelists.write_all(tera.render("CMakeLists.txt", &context)?.as_bytes())?;
 
     git_init(path, args.git_branch.as_ref().unwrap())?;
 
