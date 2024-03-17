@@ -5,7 +5,13 @@ use anyhow::{anyhow, Result};
 use arguments::Arguments;
 use clap::Parser;
 use git::git_init;
-use std::{fs::create_dir, path::Path, process::exit};
+use minijinja::{context, Environment};
+use std::{
+    fs::{create_dir, File},
+    io::Write,
+    path::Path,
+    process::exit,
+};
 
 fn main() {
     let args = Arguments::parse();
@@ -27,6 +33,18 @@ fn create(args: &Arguments) -> Result<()> {
     } else {
         create_dir(path)?;
     }
+
+    // template
+    let mut env = Environment::new();
+    env.add_template(
+        "templates/CMakeLists.txt",
+        include_str!("templates/CMakeLists.txt"),
+    )?;
+    let tmpl = env.get_template("templates/CMakeLists.txt")?;
+
+    // cmakelists
+    let mut cmakelists = File::create(path.join("CMakeLists.txt"))?;
+    cmakelists.write_all(tmpl.render(context!(name=> "exmaple-project"))?.as_bytes())?;
 
     git_init(path, args.git_branch.as_ref().unwrap())?;
 
