@@ -15,14 +15,21 @@ use tera::Tera;
 
 fn main() {
     let args = Arguments::parse();
-    if let Err(e) = create(&args) {
+
+    let path = Path::new(&args.path);
+
+    let name = match &args.name {
+        Some(n) => n.clone(),
+        None => path.file_name().unwrap().to_str().unwrap().into(),
+    };
+
+    if let Err(e) = create(&args, path, &name) {
         eprintln!("Error - {}", e);
         exit(1);
     }
 }
 
-fn create(args: &Arguments) -> Result<()> {
-    let path = Path::new(&args.path);
+fn create(args: &Arguments, path: &Path, name: &str) -> Result<()> {
     if path.exists() {
         if path.is_dir() && path.read_dir()?.next().is_some() {
             return Err(anyhow!(
@@ -34,13 +41,24 @@ fn create(args: &Arguments) -> Result<()> {
         create_dir(path)?;
     }
 
+    println!(
+        "Creating project '{}' in directory {}",
+        name,
+        path.display()
+    );
+    if args.executable {
+        println!("Generating executable");
+    }
+
     // template
-    // let tera = Tera::new("templates/**/*")?;
     let mut tera = Tera::default();
-    tera.add_template_file("templates/CMakeLists.txt", Some("CMakeLists.txt"))?;
+    tera.add_template_file(
+        "templates/executable/CMakeLists.txt",
+        Some("CMakeLists.txt"),
+    )?;
 
     let mut context = tera::Context::new();
-    context.insert("name", "example-project");
+    context.insert("name", name);
 
     // cmakelists
     let mut cmakelists = File::create(path.join("CMakeLists.txt"))?;
