@@ -14,7 +14,7 @@ pub struct Arguments {
     #[arg(long, help = "Default branch name", default_value = "main")]
     pub git_branch: Option<String>,
 
-    #[arg(long = "exe", help = "Generate an executable", default_value = "true")]
+    #[arg(long = "exe", help = "Generate an executable")]
     pub executable: bool,
 
     #[arg(long = "lib", help = "Generate an static/shared library")]
