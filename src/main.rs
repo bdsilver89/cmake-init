@@ -1,5 +1,6 @@
 mod arguments;
 mod git;
+mod project;
 
 use anyhow::{anyhow, Result};
 use arguments::Arguments;
