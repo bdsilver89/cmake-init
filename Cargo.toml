@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.81"
 clap = { version = "4.5.3", features = ["derive"] }
+inquire = "0.7.3"
 regex = "1.10.3"
 serde = { version = "1.0.197", features = ["derive"] }
 tera = "1.19.1"
